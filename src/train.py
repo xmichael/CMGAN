@@ -78,20 +78,20 @@ class Trainer:
             clean * c, 0, 1
         )
 
-        noisy_spec = torch.stft(
+        noisy_spec = torch.view_as_real(torch.stft(
             noisy,
             self.n_fft,
             self.hop,
             window=torch.hamming_window(self.n_fft).to(self.gpu_id),
-            onesided=True,
-        )
-        clean_spec = torch.stft(
+            onesided=True, return_complex=True
+        ))
+        clean_spec = torch.view_as_real(torch.stft(
             clean,
             self.n_fft,
             self.hop,
             window=torch.hamming_window(self.n_fft).to(self.gpu_id),
-            onesided=True,
-        )
+            onesided=True, return_complex=True
+        ))
         noisy_spec = power_compress(noisy_spec).permute(0, 1, 3, 2)
         clean_spec = power_compress(clean_spec)
         clean_real = clean_spec[:, 0, :, :].unsqueeze(1)
@@ -103,6 +103,14 @@ class Trainer:
         clean_mag = torch.sqrt(clean_real**2 + clean_imag**2)
 
         est_spec_uncompress = power_uncompress(est_real, est_imag).squeeze(1)
+
+        #########
+        est_spec_uncompress = est_spec_uncompress.permute(0, 3, 1, 2)
+        est_spec_real = est_spec_uncompress[:, 0, :, :]
+        est_spec_imag = est_spec_uncompress[:, 1, :, :]
+        est_spec_uncompress = torch.complex(est_spec_real, est_spec_imag)
+        ########
+        
         est_audio = torch.istft(
             est_spec_uncompress,
             self.n_fft,
