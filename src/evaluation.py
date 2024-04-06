@@ -7,7 +7,7 @@ from utils import *
 import torchaudio
 import soundfile as sf
 import argparse
-
+import gc
 
 @torch.no_grad()
 def enhance_one_track(
@@ -90,7 +90,10 @@ def evaluation(model_path, noisy_dir, clean_dir, save_tracks, saved_dir):
         metrics = compute_metrics(clean_audio, est_audio, sr, 0)
         metrics = np.array(metrics)
         metrics_total += metrics
-
+        # necessary to force cleaup in colab / ipython
+        torch.cuda.empty_cache()
+        gc.collect()
+        
     metrics_avg = metrics_total / num
     print(
         "pesq: ",
