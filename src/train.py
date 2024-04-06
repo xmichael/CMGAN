@@ -15,7 +15,7 @@ from torch.distributed import init_process_group, destroy_process_group
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--epochs", type=int, default=120, help="number of epochs of training")
-parser.add_argument("--batch_size", type=int, default=4)
+parser.add_argument("--batch_size", type=int, default=2)
 parser.add_argument("--log_interval", type=int, default=500)
 parser.add_argument("--decay_epoch", type=int, default=30, help="epoch from which to start lr decay")
 parser.add_argument("--init_lr", type=float, default=5e-4, help="initial learning rate")
