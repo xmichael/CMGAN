@@ -104,12 +104,7 @@ class Trainer:
 
         est_spec_uncompress = power_uncompress(est_real, est_imag).squeeze(1)
 
-        #########
-        est_spec_uncompress = est_spec_uncompress.permute(0, 3, 1, 2)
-        est_spec_real = est_spec_uncompress[:, 0, :, :]
-        est_spec_imag = est_spec_uncompress[:, 1, :, :]
-        est_spec_uncompress = torch.complex(est_spec_real, est_spec_imag)
-        ########
+        est_spec_uncompress=torch.view_as_complex(est_spec_uncompress)
         
         est_audio = torch.istft(
             est_spec_uncompress,
