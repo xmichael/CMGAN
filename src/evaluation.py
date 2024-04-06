@@ -33,14 +33,22 @@ def enhance_one_track(
             batch_size += 1
         noisy = torch.reshape(noisy, (batch_size, -1))
 
-    noisy_spec = torch.stft(
-        noisy, n_fft, hop, window=torch.hamming_window(n_fft).cuda(), onesided=True
-    )
+    noisy_spec = torch.view_as_real(torch.stft(
+        noisy, n_fft, hop, window=torch.hamming_window(n_fft).cuda(), onesided=True, return_complex=True
+    ))
     noisy_spec = power_compress(noisy_spec).permute(0, 1, 3, 2)
     est_real, est_imag = model(noisy_spec)
     est_real, est_imag = est_real.permute(0, 1, 3, 2), est_imag.permute(0, 1, 3, 2)
 
     est_spec_uncompress = power_uncompress(est_real, est_imag).squeeze(1)
+
+    #########
+    est_spec_uncompress = est_spec_uncompress.permute(0, 3, 1, 2)
+    est_spec_real = est_spec_uncompress[:, 0, :, :]
+    est_spec_imag = est_spec_uncompress[:, 1, :, :]
+    est_spec_uncompress = torch.complex(est_spec_real, est_spec_imag)
+    ########
+
     est_audio = torch.istft(
         est_spec_uncompress,
         n_fft,
